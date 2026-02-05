@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигуратор Драгина</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== ОСНОВНЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none;
+        }
+
+        /* ===== ОКНО ИНСТРУКЦИИ ===== */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 100%);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .welcome-modal.active {
+            display: flex;
+        }
+
+        .welcome-content {
+            background: rgba(16, 18, 36, 0.95);
+            border: 2px solid rgba(255, 209, 102, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ffd166;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        .nickname-form {
+            margin-top: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #ffd166;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        #nickname-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 209, 102, 0.3);
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        #nickname-input:focus {
+            border-color: #ffd166;
+            box-shadow: 0 0 15px rgba(255, 209, 102, 0.3);
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #ff9d00 0%, #ffd166 100%);
+            border: none;
+            border-radius: 12px;
+            color: #1a1a2e;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .start-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 157, 0, 0.4);
+        }
+
+        /* ===== ОСНОВНОЙ ИНТЕРФЕЙС ===== */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .current-adventurer {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #ffd166;
+        }
+
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .current-card-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .current-card-wrapper {
+            width: 100%;
+            max-width: 400px;
+            perspective: 1000px;
+        }
+
+        .current-card {
+            background: linear-gradient(135deg, rgba(255, 209, 102, 0.1), rgba(157, 78, 221, 0.1));
+            border: 2px solid rgba(255, 209, 102, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .current-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-info-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 209, 102, 0.2);
+            border: 1px solid rgba(255, 209, 102, 0.5);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            color: #ffd166;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-info-btn:hover {
+            background: rgba(255, 209, 102, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .card-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+
+        .legendary-btn {
+            background: linear-gradient(135deg, #ffd166, #ff9d00);
+            color: #1a1a2e;
+        }
+
+        .epic-btn {
+            background: linear-gradient(135deg, #9d4edd, #560bad);
+            color: white;
+        }
+
+        .skip-btn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+
+        .card-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Колонки */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column.legendary {
+            border-top: 5px solid #ffd166;
+            background: rgba(255, 209, 102, 0.05);
+        }
+
+        .column.epic {
+            border-top: 5px solid #9d4edd;
+            background: rgba(157, 78, 221, 0.05);
+        }
+
+        .column.skipped {
+            border-top: 5px solid #6c757d;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+
+        .column.legendary .column-header {
+            background: linear-gradient(90deg, rgba(255, 209, 102, 0.1), rgba(255, 157, 0, 0.1));
+        }
+
+        .column.epic .column-header {
+            background: linear-gradient(90deg, rgba(157, 78, 221, 0.1), rgba(86, 11, 173, 0.1));
+        }
+
+        .column-header h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .counter {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        /* Карточки в колонках */
+        .cards-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 300px;
+            padding-right: 5px;
+        }
+
+        .column-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .column-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .column-card h4 {
+            color: #ffd166;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .column-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 71, 111, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            color: #ef476f;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .remove-btn:hover {
+            background: rgba(239, 71, 111, 0.3);
+        }
+
+        /* Панель управления */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stats p {
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: #ffd166;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, #06d6a0, #118ab2);
+            color: white;
+        }
+
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Модальное окно деталей карточки */
+        .card-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .card-detail-modal.active {
+            display: flex;
+        }
+
+        .card-detail-content {
+            background: #1a1a2e;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #ffd166;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-detail-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ffd166;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .detail-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .detail-section h4 {
+            color: #ffd166;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        #detail-description {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        /* Модальное окно результата */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #ffd166;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .result-content {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .adventurer-name-header {
+            background: rgba(255, 209, 102, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd166;
+        }
+
+        .name-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd166;
+        }
+
+        .result-content h3 {
+            color: #ffd166;
+            margin: 15px 0 8px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Уведомление */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid rgba(255, 209, 102, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-color: rgba(239, 71, 111, 0.5);
+        }
+
+        .notification.success {
+            border-color: rgba(6, 214, 160, 0.5);
+        }
+
+        /* Кнопка музыки */
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 209, 102, 0.2);
+            border: 1px solid rgba(255, 209, 102, 0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: #ffd166;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .music-control:hover {
+            background: rgba(255, 209, 102, 0.3);
+        }
+
+        /* Анимации */
+        @keyframes glow-yellow {
+            0% { box-shadow: 0 0 5px rgba(255, 209, 102, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 209, 102, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 209, 102, 0.5); }
+        }
+
+        @keyframes glow-purple {
+            0% { box-shadow: 0 0 5px rgba(157, 78, 221, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(157, 78, 221, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(157, 78, 221, 0.5); }
+        }
+
+        .column.legendary {
+            animation: glow-yellow 3s infinite;
+        }
+
+        .column.epic {
+            animation: glow-purple 3s infinite 1.5s;
+        }
+
+        /* Стили для инструкции */
+        .instruction-step {
+            display: flex;
+            align-items: start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: rgba(255, 209, 102, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #ffd166;
+            font-weight: bold;
+        }
+
+        .step-content h3 {
+            color: #ffd166;
+            margin-bottom: 5px;
+        }
+
+        /* Скроллбар */
+        .cards-container::-webkit-scrollbar,
+        .card-detail-content::-webkit-scrollbar,
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .cards-container::-webkit-scrollbar-track,
+        .card-detail-content::-webkit-scrollbar-track,
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .cards-container::-webkit-scrollbar-thumb,
+        .card-detail-content::-webkit-scrollbar-thumb,
+        .modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 209, 102, 0.5);
+            border-radius: 10px;
+        }
+
+        .cards-container::-webkit-scrollbar-thumb:hover,
+        .card-detail-content::-webkit-scrollbar-thumb:hover,
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 209, 102, 0.8);
+        }
+
+        /* Адаптивность для мобилок */
+        @media (max-width: 768px) {
+            .kanban-board {
+                flex-direction: column;
+            }
+            
+            .column {
+                min-width: 100%;
+                min-height: 300px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-buttons .btn {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .card-btn {
+                width: 100%;
+            }
+            
+            .current-card-wrapper {
+                max-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            body {
+                padding-bottom: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-content {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-detail-content,
+            .modal-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ОКНО ИНСТРУКЦИИ -->
+    <div class="welcome-modal" id="instruction-modal">
+        <div class="welcome-content">
+            <div class="title-container">
+                <h1><i class="fas fa-book"></i> Добро пожаловать в конфигуратор Драгина!</h1>
+                <div class="subtitle">Это инструмент созданный Dragin Group для рефлексии и самоопределения.</div>
+            </div>
+            
+            <div style="margin: 25px 0; line-height: 1.6;">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Как тебя зовут, авантюрист?</h3>
+                        <p>Не скромничай, бро. Это имя будут слагать в легендах.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Изучай постулат-карты</h3>
+                        <p>Тебе будут показываться карты с личными ценностями. ОБЯЗАТЕЛЬНО Нажимай <i class="fas fa-info" style="color: #ffd166;"></i> для развернутого описания.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Расставляй приоритеты и создавай свой билд.</h3>
+                        <p>Как следует подумав, для каждой карты выбирай ее позицию в твоей жизни:<br>
+                        • <strong style="color: #ffd166;">Легендарное</strong> — самое важное, это ядро твоей жизни. (макс. 4)<br>
+                        • <strong style="color: #9d4edd;">Эпическое</strong> — принципы которые помогают тебе сражаться. (макс. 10)<br>
+                        • <strong style="color: #6c757d;">Пропуск</strong> — То, что сейчас не в приоритете.</p>
+                    </div>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Нажми кнопку внизу и получи результат</h3>
+                        <p>Делай выборы с умом. В конце узнаешь свой архетип авантюриста и сможешь поделиться результатом с друзьями.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <button class="start-btn" id="start-instruction-btn">
+                    <i class="fas fa-play-circle"></i>
+                    <span>ПОНЯЛ, ПОГНАЛИ!</span>
+                </button>
+                
+                <div style="text-align: center; margin-top: 15px; color: rgba(255,255,255,0.5); font-size: 0.9rem;">
+                    <label style="display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="dont-show-again" style="cursor: pointer;">
+                        Больше не показывать
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОКНО ПРИВЕТСТВИЯ -->
+    <div class="welcome-modal" id="welcome-modal">
+        <div class="welcome-content">
+            <div class="title-container">
+                <h1><i class="fas fa-dragon"></i> Конфигуратор Драгина</h1>
+                <div class="subtitle">Создай свой билд жизненных приоритетов как в D&D</div>
+            </div>
+            
+            <div class="nickname-form">
+                <div class="input-group">
+                    <label for="nickname-input">
+                        <i class="fas fa-user-circle"></i> Введи свое имя, приключенец
+                    </label>
+                    <input 
+                        type="text" 
+                        id="nickname-input" 
+                        placeholder="Может ты - Майллет или Алиса Вольт..."
+                        maxlength="20"
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <button class="start-btn" id="start-btn" disabled>
+                    <i class="fas fa-dice-d20"></i>
+                    <span>НАЧАТЬ ПУТЕШЕСТВИЕ</span>
+                </button>
+                
+                <div style="margin-top: 15px; text-align: center; color: rgba(255,255,255,0.5); font-size: 0.9rem;">
+                    <i class="fas fa-volume-up"></i> Музыка включится автоматически
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
+    <div class="container" id="main-container">
+        <header>
+            <h1><i class="fas fa-dragon"></i> Конфигуратор Драгина</h1>
+            <p class="subtitle">Определи ценность постулата: одна карта за раз</p>
+            <div class="current-adventurer">
+                <i class="fas fa-user"></i> Авантюрист: <span id="current-name">Неизвестный</span>
+            </div>
+        </header>
+
+        <div class="game-board">
+            <div class="current-card-section">
+                <div class="current-card-wrapper">
+                    <div class="current-card" id="current-card">
+                        <button class="card-info-btn" id="card-info-btn">
+                            <i class="fas fa-info"></i>
+                        </button>
+                        <h3 id="current-card-title">Загрузка карты...</h3>
+                        <p id="current-card-desc">Готовься к выбору</p>
+                        
+                        <div class="action-buttons">
+                            <button class="card-btn legendary-btn" id="add-legendary">
+                                <i class="fas fa-crown"></i> Легендарное
+                            </button>
+                            <button class="card-btn epic-btn" id="add-epic">
+                                <i class="fas fa-star"></i> Эпическое
+                            </button>
+                            <button class="card-btn skip-btn" id="skip-card">
+                                <i class="fas fa-forward"></i> Пропустить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kanban-board">
+                <div class="column legendary">
+                    <div class="column-header">
+                        <h2><i class="fas fa-crown"></i> Легендарные</h2>
+                        <div class="counter">0/4</div>
+                    </div>
+                    <p class="column-desc">Ядро твоей личности (макс. 4)</p>
+                    <div class="cards-container" id="legendary-column"></div>
+                </div>
+
+                <div class="column epic">
+                    <div class="column-header">
+                        <h2><i class="fas fa-star"></i> Эпические</h2>
+                        <div class="counter">0/10</div>
+                    </div>
+                    <p class="column-desc">Твоя внутренняя сила (макс. 10)</p>
+                    <div class="cards-container" id="epic-column"></div>
+                </div>
+
+                <div class="column skipped">
+                    <div class="column-header">
+                        <h2><i class="fas fa-archive"></i> Пропущенные</h2>
+                        <div class="counter">0</div>
+                    </div>
+                    <p class="column-desc">То, что сейчас не в приоритете</p>
+                    <div class="cards-container" id="skipped-column"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="stats">
+                <p>Осталось карт: <span id="remaining-cards">47</span></p>
+                <p>Выбрано: <span id="selected-cards">0</span> из 14 возможных</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="reset-btn" class="btn secondary">
+                    <i class="fas fa-redo"></i> Сбросить все
+                </button>
+                <button id="result-btn" class="btn primary">
+                    <i class="fas fa-scroll"></i> Результат
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно деталей карточки -->
+    <div class="card-detail-modal" id="card-detail-modal">
+        <div class="card-detail-content">
+            <button class="close-detail-btn" id="close-detail-btn">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="detail-title"></h2>
+            <p id="detail-description"></p>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-book"></i> Примеры из жизни авантюриста:</h4>
+                <p id="detail-examples"></p>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-chart-bar"></i> Параметры:</h4>
+                <p id="detail-stats"></p>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-users"></i> Известные носители:</h4>
+                <p id="detail-characters"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно результата -->
+    <div class="result-modal" id="result-modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-scroll"></i> Лист авантюриста: <span id="result-name"></span></h2>
+            <div class="result-content" id="result-content"></div>
+            <div class="modal-buttons">
+                <button class="btn secondary" id="close-modal">
+                    <i class="fas fa-times"></i> Закрыть
+                </button>
+                <button class="btn primary" id="share-btn">
+                    <i class="fas fa-share-alt"></i> Поделиться
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка управления музыкой -->
+    <div class="music-control" id="music-control">
+        <i class="fas fa-volume-up" id="music-icon"></i>
+    </div>
+
+    <!-- Аудио с локальным треком -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="toby_fox_gyaa_ha_ha.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+        let adventurerName = "Неизвестный авантюрист";
+        let state = {
+            legendary: [],
+            epic: [],
+            skipped: [],
+            currentCard: null,
+            availableCards: []
+        };
+
+        let isMusicPlaying = false;
+        let musicEnabled = true;
+
+        // Карточки постулатов
+        const allPostulates = [
+            {
+                id: 1,
+                title: "Любовь",
+                description: "Способность проекции своей страсти, чувств и привязанности к человеку.",
+                extendedDescription: `Хватит ли у тебя смелости сплести свою душу с чьей-то не поранив себя и кого-то? Хватит ли твой страсти для подвигов? Любовь это не сантименты, милые слова и не гормоны. Это титаническая сила, вдыхающая жизнь в глину бытия и заставляющая смертных бросать вызов самой судьбе. Когда ты молча делишься последним глотком воды, и готов не спать несколько ночей. Это главное оружие авантюриста против цинизма и безразличия нашей жестокой вселенной.`,
+                category: "relationships",
+                examples: "Долгосрочные отношения, семья, самоотверженная забота о близких, романтические жесты, битва с драконом за возлюбленную.",
+                stats: "Дриммер: +9, Псиотик: +7, Катарсис: +6",
+                characters: "Ромео и Джульетта, Наруто Удзумаки, Одиссей (ради Пенелопы)"
+            },
+            {
+                id: 2,
+                title: "Свобода",
+                description: "Анархия, сучки! Священное право действовать согласно своей воле, без ограничений.",
+                extendedDescription: `Настоящий авантюрист знает, остракизм - очень крошечная цена за автономию, со скидкой 50%. Свобода есть состояние, когда ты не привязан к чужим маякам и не заперт в клетке собственных страхов. Ты волен делать что хочешь, думать как хочешь и быть кем хочешь. Анархия, поэзия и дикий ветер в твоих волосах. Никаких цепей. Но помни, свобода это самая тяжелая ответственность - поскольку она только перед самим собой.`,
+                category: "personal",
+                examples: "Путешествие автостопом, работа на себя, принятие независимых решений, отказ от ненужных обязательств.",
+                stats: "Хаос: +10, Кинетик: +7, Катарсис: +5",
+                characters: "Джек Воробей, Ёжик Соник, Тайлер Дёрден, Егор Драгин."
+            },
+            {
+                id: 3,
+                title: "Творчество",
+                description: "Акт воплощения внутреннего мира во внешний. Создание чего-то нового и уникального через самовыражение.",
+                extendedDescription: `Это дыхание души. Восприятие мира со всей его болью и красотой, преображение этого восприятия в песню, механизм, жест, слово, что-угодно. Это божественная искра в человеке, заставляющая его не довольствоваться данным, а со-творять реальность заново, по своим внутренним чертежам.`,
+                category: "creation",
+                examples: "Живопись, писательство, музыка, дизайн, писать роман в 3 ночи, решать проблемы нестандартными способами.",
+                stats: "Хаос: +9, Дриммер: +10, Катарсис: +6",
+                characters: "Леонардо да Винчи, Фрида Кало, Стив Джобс"
+            },
+            {
+                id: 4,
+                title: "Наука",
+                description: "Жадное стремление к пониманию мира, его смыслов и подлинной сути.",
+                extendedDescription: `Знание — это оружие против невежества мира. Охота за истиной то, что тащит наш мир вперед. Это единственное богатство, которое невозможно отнять. Но ты должен понимать, интеллект без мудрости становится циничным, без ценностей — аморальным, без действия — бесплодным. Готов ли ты нести этот огонь, Прометей?`,
+                category: "mind",
+                examples: "Обучение новым навыкам, ночные бдения над книгами, исследования, философские дискуссии, научная работа.",
+                stats: "Псиотик: +9, Фокус: +7",
+                characters: "Альберт Эйнштейн, Озелот, Тони Старк, Аристотель"
+            },
+            {
+                id: 5,
+                title: "Влияние и Авторитет",
+                description: "Способность влиять на мысли и действия других людей.",
+                extendedDescription: `Искусство менять мир, начиная с изменения людей вокруг, силой манипуляции или прочностью авторитета. Лидерство — это и корона на голове и тяжесть знамени в руках. Искусство двигать миры, начиная с движения сердец. Но в чем главная суть, ты не впереди потому, что толкаешься локтями. Ты впереди потому, что идёшь туда, куда другим страшно, но очень нужно.`,
+                category: "power",
+                examples: "Лидерство в команде, публичные выступления, менторство, политическая деятельность, харизма, собирающая культ",
+                stats: "Псиотик: +9, Кинетик: +9",
+                characters: "Уинстон Черчилль, Макс Сахаров, Маккиавелли, Дарт Вейдер"
+            },
+            {
+                id: 6,
+                title: "Стабильность",
+                description: "Надежность и предсказуемость жизни, отсутствие резких перемен. Чувство веры в твое завтра",
+                extendedDescription: `Пока все носятся как угорелые, ты строишь. Кирпичик за кирпичиком. Стабильность — это фундамент, на котором строятся все остальные достижения. Это чувство почвы под ногами, уверенность в завтрашнем дне, которое позволяет планировать, мечтать и рисковать. Стабильность не означает застоя — это скорее платформа для роста. Как дереву нужны крепкие корни, чтобы тянуться к солнцу, так и человеку нужна стабильность, чтобы развиваться. В быстро меняющемся мире стабильность становится редкой и ценной роскошью. Она даёт энергию для свершений и силы для преодоления трудностей, потому что ты знаешь — что бы ни случилось, у тебя есть надёжная база, куда можно вернуться.`,
+                category: "security",
+                examples: "10-летний план, ипотека, привычный распорядок дня, накопления, долгосрочное планирование.",
+                stats: "Фокус: +10, Катарсис: +8",
+                characters: "Сэмвайс Гэмджи, Аянами Рей, Сквидвард"
+            },
+            {
+                id: 7,
+                title: "Приключения",
+                description: "То ради чего существуют авантюристы. Внутренняя готовность, жажда и позитивное отношение к новому, неизведанному, рискованному опыту.",
+                extendedDescription: `Авантюристы знают. Самое опасное место в мире? Это - Диван. Приключения это зов дальних дорог, звучащий в крови. Нет! Это не безрассудство, а мировоззрение, видящее в неопределенности не угрозу, а возможность проверить себя, стать лучше и привести мир в движение. Драконы, неизведанные земли, битвы за сокровища - всё это ждёт за дверью твоей зоны комфорта, которую нужно выбить ногой.`,
+                category: "experience",
+                examples: "Путешествия в неизвестные места, восхождение на вулкан, дайвинг с акулами, смена профессии, поездка в другую страну.",
+                stats: "Хаос: +9, Кинетик: +8",
+                characters: "Индиана Джонс, Нейтан Дрейк, Даша-путешественница, Лаара Крофт"
+            },
+            {
+                id: 8,
+                title: "Здоровье",
+                description: "Основательная, неоспоримая ценность физического и ментального благополучия как фундамента для любой деятельности.",
+                extendedDescription: `Без этой «статы» все остальные проседают. Это техническое обслуживание основного инструмента авантюриста - тебя самого. Тихий, ровный гул хорошо отлаженного механизма. Когда тело и разум — не враги, требующие укрощения, а верные союзники в битве за твоё величие. Слабые болеют, сильные - процветают.`,
+                category: "health",
+                examples: "Регулярные тренировки, здоровое питание, медитация, достаточный сон, профилактические осмотры.",
+                stats: "Фокус: +8, Катарсис: +9",
+                characters: "Рокки Бальбоа, Арнольд Шварценеггер, йоги древней Индии"
+            },
+            {
+                id: 9,
+                title: "Богатство и деньги",
+                description: "Материальные ресурсы, дающие возможности и безопасность.",
+                extendedDescription: `Деньги не купят счастье? Конечно! Они купят ЯХТУ, чтобы подплыть к нему поближе! Лекарство от «зависти чужому успеху». Богатство — это количество денег на счету, свобода выбора, которую дают финансовые ресурсы. Настоящее богатство — это когда деньги работают на тебя, а не ты на них.`,
+                category: "resources",
+                examples: "Инвестиции, создание бизнеса, недвижимость, финансовое планирование, пассивный доход.",
+                stats: "Фокус: +3",
+                characters: "Джон Рокфеллер, Мистер Краббс, Скрудж МакДак"
+            },
+            {
+                id: 10,
+                title: "Признание и место в обществе",
+                description: "Получение уважения и одобрения от общества.",
+                extendedDescription: `Социальное эхо твоего существования. Твой след в памяти мира. Признание — это социальное зеркало, в котором мы видим своё отражение глазами других. Хочешь, чтобы о тебе слагали легенды? Чтобы твоё имя гремело в устах поколений? Аплодисменты, награды, толпы поклонников - социальное зеркало, в котором отражается твоё величие.`,
+                category: "social",
+                examples: "Награды, звания, миллионы подписчиков, известность в профессиональных кругах, общественное одобрение.",
+                stats: "Псиотик: +9, Кинетик +4, Дриммер +7",
+                characters: "Элвис Пресли, Леди Гага, Клеопатра, Наполеон, современные инфлюенсеры"
+            },
+            {
+                id: 11,
+                title: "Духовность",
+                description: "Поиск смысла и связи с чем-то большим, чем ты сам.",
+                extendedDescription: `Поиск ответов на вопросы, которые взрывают мозг. Зачем мы здесь? В чём смысл? Есть ли что-то большее? Это не религия - это внутренний КОМПАС, ведущий сквозь туман бытия. Медитации, ритуалы, связь с космосом, разговоры с вселенной. Сила, которая держит на плаву, когда все остальные опоры рушатся. Ты не просто человек - ты вопрошающая часть вселенной.`,
+                category: "spirit",
+                examples: "Медитация, молитва, ритуалы, изучение религий, связь с природой, философские поиски.",
+                stats: "Псиотик: +7, Катарсис: +7, Дриммер: +4",
+                characters: "Будда, Оби-Ван Кеноби, Далай-лама, Морфеус (Матрица)"
+            },
+            {
+                id: 12,
+                title: "Наследие",
+                description: "Создание чего-то, что останется после тебя.",
+                extendedDescription: `Вызов, брошенный времени. Твой след в вечности. Ты умрёшь. Все умрут. Но твоё дело - НЕТ. Дети, книги, компании, открытия, которые изменят мир после тебя. Это работа не для себя, а для будущих поколений. Камень, брошенный в пруд времени, чьи круги разойдутся на столетия. Хочешь жить вечно? Создай что-то, что переживёт тебя.`,
+                category: "legacy",
+                examples: "Дети, книги, компании, благотворительные фонды, произведения искусства, научные открытия.",
+                stats: "Катарсис +2, Кинетик +2, Фокус +2",
+                characters: "Уильям Шекспир, Стив Джобс, древние фараоны, Дуров"
+            },
+            {
+                id: 13,
+                title: "Дружба",
+                description: "Искренние отношения с людьми, которым можно доверять.",
+                extendedDescription: `Семья, которую выбрал. Те, чьи сердца бьються в унисон с твоим. Они за тебя в огонь и в воду. Те, кто знают все твои косяки и всё равно рядом. Кто держит тебя за руку, когда ты в аду. В мире, где всё продаётся, настоящая дружба - последняя неподдельная валюта.`,
+                category: "relationships",
+                examples: "Поддержка в трудную минуту, совместные проекты, доверительные разговоры, секреты, которые унесут в могилу",
+                stats: "Псиотик +7, Дриммер: +7, Кинетик: +7",
+                characters: "Егоровская Коллаборация (Пророчество), Шерлок Холмс и Ватсон, Братство Кольца, Три мушкетера"
+            },
+            {
+                id: 14,
+                title: "Честность",
+                description: "Следование своим принципам и правда перед собой и другими.",
+                extendedDescription: `Сказать правду, когда ложь выгодна. Признать ошибку, когда можно смолчать. Жить по своим правилам, даже когда все вокруг срезают углы. Это не про удобство - это про ЦЕЛОСТНОСТЬ. Честность перед собой - самое сложное. Но тот, кто выдерживает свой собственный взгляд в зеркале, непобедим.`,
+                category: "integrity",
+                examples: "Признание ошибок, выполнение обещаний, Вернуть найденный кошелёк, жить по личному кодексу.",
+                stats: "Кинетик: +10, Катарсис: +7, Фокус: +4",
+                characters: "Авраам Линкольн, Сократ, Аттикус Финч"
+            },
+            {
+                id: 15,
+                title: "Баланс и Гармония",
+                description: "Гармоничное сочетание разных сфер жизни.",
+                extendedDescription: `Баланс — это искусство жонглировать шарами жизни, не уронив ни одного. Не впадать в крайности. Не сгореть на работе, не раствориться в семье, не стать отшельником. Работа, любовь, друзья, хобби, развитие - всё в меру, всё вовремя.`,
+                category: "harmony",
+                examples: "Работа-жизнь баланс, умеренность во всем, избегание крайностей, гибкий график.",
+                stats: "Катарсис: +10, Фокус +4",
+                characters: "Далай-лама, современные коучи по work-life balance"
+            },
+            {
+                id: 16,
+                title: "Риск и Дерзость",
+                description: "Сознательное принятие неопределенности ради больших целей.",
+                extendedDescription: `Прыжок в бездну с верой, что либо приземлишься, либо научишься летать. Взвесить всё и всё равно прыгнуть. Стартап на последние деньги, признание в любви, смена континента. Каждый великий прорыв начинался с а пошло оно всё. Самый большой риск - не рисковать вообще. И тогда ты никогда не узнаешь, на что способен.`,
+                category: "growth",
+                examples: "Стартапы, крупные инвестиции, опасные экспедиции, карьерные прыжки в неизвестность.",
+                stats: "Хаос: +10, Кинетик +5",
+                characters: "Илон Маск, Христофор Колумб, каскадеры"
+            },
+            {
+                id: 17,
+                title: "Дисциплина",
+                description: "Систематическое следование плану для достижения целей.",
+                extendedDescription: `Свобода через ограничения. Суперсила в мире отвлекающих факторов. Это не про лишения - это про ПРИОРИТЕТЫ. Пока все спят, ты строишь империю.`,
+                category: "productivity",
+                examples: "Ежедневные ритуалы, строгий график, выполнение планов, отказ от мгновенных удовольствий ради долгосрочных целей.",
+                stats: "Фокус: +9, Кинетик: +5, Катарсис: +4",
+                characters: "Брюс Ли, японские самураи, спортсмены-олимпийцы"
+            },
+            {
+                id: 18,
+                title: "Щедрость",
+                description: "Готовность делиться ресурсами без ожидания возврата.",
+                extendedDescription: `Парадокс: чем больше отдаёшь, тем больше получаешь. Деньги, время, знания, любовь. Разрушение иллюзии, что мы отделены. Помочь незнакомцу, наставить новичка, отдать последнее. В мире, который учит брать, щедрость - революционный акт. Меняет и дающего, и получающего.`,
+                category: "altruism",
+                examples: "Благотворительность, волонтерство, менторство, безвозмездная помощь, дарение подарков.",
+                stats: "Катарсис: +5, Дриммер: +5",
+                characters: "Мать Тереза, Робин Гуд, современные филантропы"
+            },
+            {
+                id: 19,
+                title: "Инновации",
+                description: "Создание новых решений для старых проблем.",
+                extendedDescription: `Соединять несоединимое. Улучшать неизменное. Взламывать реальность. Инноватор - вечный ученик, который знает: любая система может быть сломана и собрана заново лучше. Смелость сомневаться в статус-кво и готовность терпеть 100 неудач ради одного прорыва. Ты не следующий в очереди - ты прокладываешь новую тропу.`,
+                category: "progress",
+                examples: "Изобретения, технологические стартапы, оптимизация процессов, креативные решения.",
+                stats: "Хаос: +8, Дриммер: +8",
+                characters: "Томас Эдисон, Никола Тесла, Илон Маск, Рик Санчез"
+            },
+            {
+                id: 20,
+                title: "Наслаждение",
+                description: "Умение ценить текущий момент и получать радость от простых вещей.",
+                extendedDescription: `Наслаждение — это искусство быть полностью присутствующим в моменте. В мире гонки за достижениями - это акт сопротивления. Счастье не в пункте назначения, а в самом путешествии. Жизнь - не список дел, а коллекция моментов, от которых захватывает дух.`,
+                category: "joy",
+                examples: "Хобби, вкусная еда, искусство, природа, отдых, игры, праздники.",
+                stats: "Катарсис: +10, Хаос: +8",
+                characters: "Оскар Уайльд, древние эпикурейцы, гедонисты"
+            },
+            {
+                id: 21,
+                title: "Адаптивность",
+                description: "Умение быстро приспосабливаться к изменениям и новым условиям.",
+                extendedDescription: `Это способность быть как вода — принимать форму любого сосуда. Когда планы рушатся, обстоятельства меняются, а мир переворачивается с ног на голову, адаптивный авантюрист не ломается, а трансформируется. Это искусство находить возможности в хаосе и превращать проблемы в новые пути.`,
+                category: "growth",
+                examples: "Быстрая смена стратегии при неудаче, освоение новых технологий, работа в мультикультурной среде, гибкий график.",
+                stats: "Хаос: +9, Псиотик: +7, Кинетик: +6",
+                characters: "Джек Воробей, Джон Уик, Т-1000"
+            },
+            {
+                id: 22,
+                title: "Амбиции",
+                description: "Жажда масштаба и следа. Не просто жить, а оставить вмятину во вселенной.",
+                extendedDescription: `Тебе мало своего города? Своей страны? Своей планеты? Амбиции - это ДРАКОН, которого ты кормишь своими мечтами. Хотеть не просто успеха, а легенды. Не просто дома, а замка. Не просто бизнеса, а империи. Осторожно: либо ты управляешь драконом, либо он нахрен сжигает тебя.`,
+                category: "power",
+                examples: "Основать корпорацию-монополию, изменить индустрию, стать первым человеком на Марсе, написать книгу века.",
+                stats: "Кинетик: +10, Хаос: +9",
+                characters: "Александр Македонский, Илон Маск, Леди Макбет, Джордано Бруно"
+            },
+            {
+                id: 23,
+                title: "Благоразумие",
+                description: "Учёт отдалённых последствий. Шахматы с судьбой на 50 ходов вперёд.",
+                extendedDescription: `Пока все прыгают в омут с криком, ты считаешь глубину. Каждое решение - камень в пруду времени. Где упадут круги через год? Через десять? Это не трусость - это СТРАТЕГИЧЕСКОЕ ПРЕВОСХОДСТВО. Мудрец видит зарю в полночь.`,
+                category: "security",
+                examples: "Инвестиции на 30 лет, отказ от сиюминутной выгоды ради будущего, профилактика проблем до их появления.",
+                stats: "Фокус: +6, Псиотик: +6",
+                characters: "Тирион Ланнистер, Стивен Хокинг, Йода, Шерлок Холмс (расчёт версий)"
+            },
+            {
+                id: 24,
+                title: "Благородство",
+                description: "Достоинство и великодушие в силе. Сила, которая не унижает, а возвышает.",
+                extendedDescription: `Побеждать, но не добивать. Иметь власть, но не злоупотреблять. Быть наверху, но протянуть руку тем, кто внизу. Это не слабость - это СИЛА ВЫБОРА. Лев не унижается до уровня шакалов. Ты победил? Теперь веди себя как победитель.`,
+                category: "altruism",
+                examples: "Помощь побеждённому врагу, честная игра у власти, защита слабых просто потому что можешь, отказ от низких методов.",
+                stats: "Кинетик: +10, Катарсис: +8",
+                characters: "Арагорн, Джон Сноу, Супермен, король Артур"
+            },
+            {
+                id: 25,
+                title: "Быть лучшим",
+                description: "Соревнование с эталоном. С другими, и с идеальной версией себя.",
+                extendedDescription: `Жизнь станет бесконечной войной. Быть лучше Васи. Быть лучше себя вчерашнего. Это бесконечная гонка как с врагами, так и с собственным отражением. Каждый день - новый рекорд. Каждая неудача - урок. Жизнь война, и авантюрист не позволит себе только проигрывать. Внимание: можно сгореть, пытаясь стать богом.`,
+                category: "power",
+                examples: "Ежедневные тренировки до изнеможения, сражения, оттачивание мастерства до автоматизма, соперничество.",
+                stats: "Кинетик: +10, Хаос: +7",
+                characters: "Рокки Бальбоа, Майкл Фелпс, Коби Брайант, Брюс Ли"
+            },
+            {
+                id: 26,
+                title: "Вера",
+                description: "Устойчивая уверенность в пути. Когда знаешь куда идешь, даже в тумане.",
+                extendedDescription: `Почти слепая религиозность, ЖЕЛЕЗНАЯ УВЕРЕННОСТЬ в своём пути, цели, миссии. Когда все говорят невозможно, а ты просто идёшь. Это внутренний компас, который не ломается в магнитных бурях сомнений. Вера двигает горы. Иногда, даже буквально...`,
+                category: "spirit",
+                examples: "Следование мечте несмотря на неудачи, уверенность в проекте когда все смеются, духовные практики как опора.",
+                stats: "Кинетик: +10, Дриммер: +9, Псиотик: +8",
+                characters: "Гриффит, Моисей, Джордано Бруно (на костре), Фродо Бэггинс, Люк Скайуокер (в себя)"
+            },
+            {
+                id: 27,
+                title: "Выдержка",
+                description: "Долгая устойчивость к давлению. Не ломаться когда мир на тебя давит.",
+                extendedDescription: `Марафон, а не спринт. Когда проблемы идут волна за волной, а ты просто стоишь как скала. Не эмоциональные качели, а РОВНОЕ ГОРЕНИЕ. Способность терпеть боль, неудачи, критику и всё равно двигаться вперёд. Сталь закаляется в огне.`,
+                category: "integrity",
+                examples: "Работа в экстремальных условиях, долгий проект без результатов, противостояние травле, восстановление после падения.",
+                stats: "Кинетик: +10, Фокус: +6, Катарсис: +9",
+                characters: "Даниил Сорокин, Нельсон Мандела, Учёные в бункере, Сэмвайс Гэмджи"
+            },
+            {
+                id: 28,
+                title: "Дальновидность",
+                description: "Видение трендов и стратегий. Видеть лес, когда все видят только деревья.",
+                extendedDescription: `Великие умы играют в шахматы на карте мира. Главное правило игры на Мортисе: Видеть куда катится шар обстоятельств и вовремя подставить ногу. Предсказывать тренды за 10 лет до всех. Это не ясновидение - это АНАЛИТИКА НА СТЕРОИДАХ. Пока все живут сегодня, ты уже живёшь в завтра.`,
+                category: "mind",
+                examples: "Инвестиции в технологии будущего, карьерный поворот до того как профессия умрёт, предсказание культурных сдвигов.",
+                stats: "Псиотик: +9, Фокус: +7",
+                characters: "Тони Старк (предвидел угрозы), Нострадамус, Илон Маск, Тайвин Ланнистер"
+            },
+            {
+                id: 29,
+                title: "Демократичность",
+                description: "Учёт множественности мнений. Сила не в одном голосе, а в хоре.",
+                extendedDescription: `Вы с отрядом у разветвления пещеры. Путь налево сулит сокровища, направо — спасение пленника. Вместо авторитарного «Идем налево, я так чувствую», ты говоришь: «Разведданные есть у всех. Выскажитесь. Риск и честь — общие». Решение принимается голосованием, и даже проигравшие чувствуют, что их услышали.`,
+                category: "social",
+                examples: "Совместное принятие решений в команде, открытость к критике, поиск консенсуса, уважение меньшинства.",
+                stats: "Хаос: +8, Катарсис: +9, Дриммер: +4",
+                characters: "Джон Сноу (слушал всех), Капитан Пикард, Авраам Линкольн, мистер Спок (логика + эмоции)"
+            },
+            {
+                id: 30,
+                title: "Доблесть",
+                description: "Мужество с благородной целью. Не просто драться, а драться за что-то.",
+                extendedDescription: `Это храбрость оставаться собой. Защищать свои идеи от обесценивания, стоять за своих союзников, иметь смелость признать ошибку и начать заново. Это внутренний рыцарский кодекс. Это когда твоя сила служит не эго, а идеалу. Рыцарь в сияющих доспехах - не метафора, а образ жизни.`,
+                category: "altruism",
+                examples: "Защита слабых, честный поединок, стояние за правду против системы, подвиг ради других.",
+                stats: "Кинетик: +10, Хаос: +3",
+                characters: "Рыцари Круглого Стола, Джедаи, Жанна д'Арк, Арагорн"
+            },
+            {
+                id: 31,
+                title: "Достижение",
+                description: "Завершение значимого цикла. Не просто начать, а ДОВЕСТИ ДО КОНЦА.",
+                extendedDescription: `Идеи - дешёвые. Исполнение - дорогое. Тысячи начинают, единицы заканчивают. Нужна марафонская воля, которая не сдувается на середине пути. Финишёр - особая порода людей. И помни, это не конечная остановка, а мощный толчок, импульс для следующего витка спирали твоего развития.`,
+                category: "altruism",
+                examples: "Защита диссертации, запуск стартапа, написание книги, строительство дома, обучение сложному навыку.",
+                stats: "Кинетик: +10, Фокус: +9",
+                characters: "Томас Эдисон (10 000 попыток), Дж.К. Роулинг (закончила Гарри Поттера), Илон Маск (доводит до конца)"
+            },
+            {
+                id: 32,
+                title: "Душевное тепло",
+                description: "Излучение принятия и эмпатии. Человеческое солнце в мире кондиционеров.",
+                extendedDescription: `Ты входишь в комнату - и всем становится светлее. Не словами, а энергией. Способность принимать людей такими, какие они есть, без осуждения. Это магия, которая лечит души. В мире цифрового холода - ты живой камин. Для авантюриста — это умение поддержать товарища не пафосной речью, а молчаливым понимающим плечом или шуткой, снимающей напряжение.`,
+                category: "relationships",
+                examples: "Поддержка в трудную минуту, создание безопасного пространства, умение слушать без советов, безусловное принятие.",
+                stats: "Дриммер: +5, Катарсис: +8, Псиотик: +4",
+                characters: "Мэри Поппинс, Хагрид, миссис Уизли, доктор Кто (в хорошие дни)"
+            },
+            {
+                id: 33,
+                title: "Изобретательность",
+                description: "Практическая смекалка в решении задач. Способность находить остроумные, эффективные решения практических проблем.",
+                extendedDescription: `Дар видеть не предметы, а возможности. Видеть ресурсы там, где другие видят мусор. Решать проблемы нестандартно, быстро, эффективно. Это не теоретическое творчество, а ПРАКТИЧЕСКАЯ МАГИЯ. Весёлый, озорной дух, живущий в мастерской твоего разума.`,
+                category: "progress",
+                examples: "Починить машину подручными средствами, организовать вечеринку с нулевым бюджетом, решить кризис неожиданным способом.",
+                stats: "Хаос: +7, Псиотик: +8, Кинетик: +9",
+                characters: "Мойра Браун, Тони Старк (в пещере), Рик Санчез, Тейлз Прауер"
+            },
+            {
+                id: 34,
+                title: "Индивидуальность",
+                description: "Смелость быть подлинным. Не как все, а как ТЫ.",
+                extendedDescription: `В мире клонов - быть оригиналом. Не бояться странных увлечений, необычного стиля, непопулярных мнений. Это не эпатаж ради внимания, А ПОДЛИННОСТЬ РАДИ СЕБЯ. Самый смелый поступок - перестать притворяться. Это смелость показать миру рисунок, раскрашенный в цвета твоей собственной, ни на кого не похожей души. А даже если осудят - хер с ним.`,
+                category: "personal",
+                examples: "Свой уникальный стиль, необычное хобби, непопулярные взгляды, жизнь по своим правилам, отказ от масок.",
+                stats: "Хаос: +10, Дриммер: +8",
+                characters: "Леди Гага, Джонни Депп, Фрида Кало, Егор Драгин"
+            },
+            {
+                id: 35,
+                title: "Надёжность",
+                description: "Предсказуемая прочность. Скала, на которую можно опереться.",
+                extendedDescription: `Ты сказал - ты сделал. Пообещал - выполнил. Даже если заболеешь, даже если будет сложно. В мире, где все срывают дедлайны, ты - атомные часы. Не герой одного дня, а тихий герой каждый день. Фундамент, на котором держится этот хрупкий мирок.`,
+                category: "security",
+                examples: "Всегда прийти вовремя, выполнять обещания, быть опорой для близких, работать как швейцарские часы.",
+                stats: "Фокус: +10, Катарсис: +9",
+                characters: "Сэмвайс Гэмджи, Капитан Америка, мистер Спок, Любая швейцарская техника"
+            },
+            {
+                id: 36,
+                title: "Настойчивость",
+                description: "Упрямство духа в цели. Лбом пробивать стены, если надо.",
+                extendedDescription: `Кто реально хочет - тот берет. Надо не просто стараться, а БИТЬСЯ ГОЛОВОЙ О СТЕНУ, пока стена не треснет. 100 отказов? Иди за 101-м. Это не тупое упрямство, а СВЕРХУВЕРЕННОСТЬ в своей цели. Река точит камень не силой, а постоянством. Капля за каплей.`,
+                category: "power",
+                examples: "Продолжать после 50 отказов, учить язык годами, тренироваться через боль, не сдаваться когда все сдались.",
+                stats: "Кинетик: +10, Фокус: +7",
+                characters: "Рокки Бальбоа, Томас Эдисон, Черепаха против Зайца, Генри Форд"
+            },
+            {
+                id: 37,
+                title: "Мастерство",
+                description: "Стремление к состоянию, когда действие и сознание сливаются воедино, а навык становится продолжением тела и воли.",
+                extendedDescription: `Мастерство - медитация в движении. Это когда между идеей и ее воплощением исчезает барьер из сомнений и усилий. Руки знают, ум видит, душа поет в унисон. Это превращение труда в танец, а проблемы - в изящный пазл.`,
+                category: "power",
+                examples: "Оттачивание навыка, самосовершенствование скилла до бесконечности, верность ремеслу.",
+                stats: "Кинетик: +6, Фокус: +9, Катарсис: +7",
+                characters: "Артем Чаплыгин, Брюс Ли, Такуми Фудзивара"
+            },
+            {
+                id: 38,
+                title: "Ответственность",
+                description: "Признание себя причиной событий. Не мне не повезло, а я выбрал такой путь.",
+                extendedDescription: `Взросление - это когда перестаёшь винить родителей, правительство, погоду. И говоришь: Это я. Мои решения. Мои последствия. Страшно? Ещё бы. Но только так ты становишься капитаном своего корабля, а не пассажиром. Только так ты герой своей жизни - а не жертва.`,
+                category: "spirit",
+                examples: "Признание ошибок, выполнение обязательств, забота о последствиях своих действий, лидерство в кризисе.",
+                stats: "Кинетик: +10, Фокус: +9",
+                characters: "Капитан Америка, Джон Уик (кодекс), Тони Старк (после Афганистана), Арагорн (как король)"
+            },
+            {
+                id: 39,
+                title: "Открытость",
+                description: "Готовность к новому опыту. Жить с распахнутыми дверями восприятия.",
+                extendedDescription: `Не цепляться за старое. Пробовать странную еду, слушать непонятную музыку, общаться с непохожими людьми. Мир - это буфет, а ты с одной тарелкой? Бери всё! Рискни быть глупым, наивным, удивлённым. Только так растёшь.`,
+                category: "experience",
+                examples: "Путешествия в чужие культуры, изучение новых навыков в 50 лет, готовность менять мнение, эксперименты с собой.",
+                stats: "Хаос: +10, Катарсис: +5, Дриммер: +6",
+                characters: "Доктор Кто, Форрест Гамп, Алиса в Стране Чудес, Индиана Джонс"
+            },
+            {
+                id: 40,
+                title: "Справедливость",
+                description: "Стремление к правде и честности. Весы, которые не дрогнут даже под золотом.",
+                extendedDescription: `Это трудная, часто неблагодарная работа по восстановлению нарушенной гармонии мира. Это тихий голос, который говорит: «Так - правильно. А так - нет», даже когда «неправильно» — выгоднее. Защищать слабого против сильного. Это не про месть - это про ВОССТАНОВЛЕНИЕ БАЛАНСА. Тот, кто стоит за справедливость, стоит против всего мира.`,
+                category: "altruism",
+                examples: "Защита невинного, разоблачение коррупции, честный суд, борьба с системной несправедливостью.",
+                stats: "Кинетик: +10, Фокус: +8",
+                characters: "Бэтмен, Аттикус Финч, Жанна д'Арк, Макс Сахаров"
+            },
+            {
+                id: 41,
+                title: "Смелость",
+                description: "Действие вопреки страху. Не отсутствие страха, а шаг через него.",
+                extendedDescription: `Это маленькая, дрожащая свечка, которую ты зажигаешь в огромной, тёмной пещере своего страха. Её свет слаб, он не рассеивает тьму, но он показывает тебе следующий шаг. И этого достаточно, чтобы идти. Это решение двигаться вперёд, даже когда всё внутри кричит «стоп!». К своей мечте. Страх кричит нет, смелость шепчет а давай попробуем.`,
+                category: "power",
+                examples: "Выступление перед тысячей, прыжок с парашютом, признание в любви, смена карьеры в 40.",
+                stats: "Кинетик: +10, Хаос: +7",
+                characters: "Гарри Поттер, Индиана Джонс, Китнисс Эвердин, Люк Скайуокер"
+            },
+            {
+                id: 42,
+                title: "Чуткость",
+                description: "Внимание к нуждам других. Слышать не сказанное, видеть не показанное.",
+                extendedDescription: `Эмоциональный радар Авантюриста. Искусство заметить, что у друга голос дрожит, хотя он улыбается. Понять, что коллеге нужна помощь, хотя он не просит. Это радар для человеческой боли и радости. Не навязчивость, а БЕРЕЖНОЕ ВНИМАНИЕ. Искусство быть нужным, не становясь навязчивым.`,
+                category: "altruism",
+                examples: "Помощь до просьбы, запоминание мелочей о людях, тактичность в сложных ситуациях, эмпатичное слушание.",
+                stats: "Дриммер: +10, Катарсис: +9, Псиотик: +7",
+                characters: "Спанч Боб, Сэмвайс Гэмджи, миссис Уизли, Гэндальф (к людям)"
+            },
+            {
+                id: 43,
+                title: "Простота",
+                description: "Стремление к ясности, минимализму и отсутствию лишнего усложнения в мыслях, решениях, общении и образе жизни.",
+                extendedDescription: `Простота — это вершина горы понимания. Чтобы подняться на неё, нужно пройти через джунгли сложности, через тернии деталей. Но с вершины открывается ясный, чистый вид на суть вещей. Это искусство убирать всё лишнее, пока не останется только сама истина, сияющая в своей незамутнённой форме.`,
+                category: "integrity",
+                examples: "Забить и кайфовать.",
+                stats: "Катарсис: +9, Фокус: +10",
+                characters: "Артем Чаплыгин, нормисы"
+            },
+            {
+                id: 44,
+                title: "Элегантность",
+                description: "Изящество и вкус в проявлениях. Делать сложное - простым, простое - прекрасным.",
+                extendedDescription: `Не роскошь, а СТИЛЬ. Не дорогие вещи, а умение их носить. Красота в минимализме, грация в движении, утончённость в словах. Это когда в жесте, в слове, в линии нет ничего лишнего, и от этого оно приобретает силу и чистоту алмазной грани. Это внутренняя ухоженность души, проступающая во всём внешнем.`,
+                category: "harmony",
+                examples: "Идеальный минималистичный гардероб, изящное решение проблемы, красивые манеры, эстетика в быту.",
+                stats: "Хаос: +8, Дриммер: +9, Фокус: +7",
+                characters: "Джеймс Бонд, Доктор Ксено, Коко Шанель, д'Артаньян (по-своему)"
+            },
+            {
+                id: 45,
+                title: "Энергичность",
+                description: "Большой запас жизненных сил. Батарейка, которая никогда не садится.",
+                extendedDescription: `После двухнедельного сложного похода отряд валится с ног. Твоя энергичность — это не просто не упасть. Это, пока другие ставят палатки, сходить к ручью, принести воды, развести костёр покрепче и начать готовить ужин, подбадривая других шутками. Ты — батарейка отряда. Солнце в человеческом теле. За тобой не успевают, но хотят быть рядом - заряжаются.`,
+                category: "health",
+                examples: "Работа по 16 часов с улыбкой, совмещение 5 проектов, активный отдых после работы, лидерство в танцах до утра.",
+                stats: "Хаос: +10, Катарсис: +6",
+                characters: "Тасманский дьявол (из мультиков), Джек из Титаника (энергия), Любой фитнес-блогер, Энтузиаст"
+            },
+            {
+                id: 46,
+                title: "Энтузиазм",
+                description: "Заразительная увлечённость. Гореть самому и зажигать других.",
+                extendedDescription: `Не просто делать дело, а ДРАЙВИТЬСЯ от него. Когда твои глаза горят, слова льются рекой, и все вокруг заражаются твоей верой в проект. Энтузиазм - это вирус успеха. Он превращает надо в хочу, рутину - в приключение. Это чистая сила одержимости, приводящая мир в движение.`,
+                category: "spirit",
+                examples: "Увлечённая презентация, волонтёрство с огоньком, обучение с горящими глазами, лидерство через вдохновение.",
+                stats: "Хаос: +10, Кинетик: +9",
+                characters: "Стив Балмер (Microsoft), Том Круз (в интервью), любой успешный мотивационный спикер"
+            },
+            {
+                id: 47,
+                title: "Юмор",
+                description: "Способность видеть и создавать комичное. Смех как супероружие против абсурда жизни.",
+                extendedDescription: `Когда мир кидает в тебя дерьмом, ты делаешь из него конфетти. Находить смешное в трагичном, абсурдное в серьёзном. Юмор - не побег от реальности, а СПОСОБ ЕЁ ОСВОЕНИЯ. Тот, кто смеётся, - неуязвим.`,
+                category: "joy",
+                examples: "Шутки в стрессовых ситуациях, комедийные выступления, умение посмеяться над собой, создание мемов из проблем.",
+                stats: "Хаос: +9, Псиотик: +10, Катарсис: +7",
+                characters: "Дэдпул, Тони Старк (сарказм), Райан Рейнольдс, Чарли Чаплин"
+            }
+        ];
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Проверяем, показывать ли инструкцию
+            const dontShowAgain = localStorage.getItem('dontShowInstruction');
+            
+            if (dontShowAgain === 'true') {
+                document.getElementById('instruction-modal').classList.remove('active');
+                document.getElementById('welcome-modal').classList.add('active');
+            } else {
+                document.getElementById('instruction-modal').classList.add('active');
+            }
+            
+            // Кнопка "Погнали" в инструкции
+            document.getElementById('start-instruction-btn').addEventListener('click', function() {
+                const dontShowCheckbox = document.getElementById('dont-show-again');
+                if (dontShowCheckbox.checked) {
+                    localStorage.setItem('dontShowInstruction', 'true');
+                }
+                
+                document.getElementById('instruction-modal').classList.remove('active');
+                document.getElementById('welcome-modal').classList.add('active');
+                
+                setTimeout(() => {
+                    document.getElementById('nickname-input').focus();
+                }, 100);
+            });
+            
+            // Инициализация окна приветствия
+            const nicknameInput = document.getElementById('nickname-input');
+            const startBtn = document.getElementById('start-btn');
+            const mainContainer = document.getElementById('main-container');
+
+            nicknameInput.addEventListener('input', function() {
+                const nickname = this.value.trim();
+                startBtn.disabled = nickname.length < 2 || nickname.length > 20;
+            });
+
+            startBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                adventurerName = nicknameInput.value.trim();
+                document.getElementById('current-name').textContent = adventurerName;
+                
+                document.getElementById('welcome-modal').classList.remove('active');
+                mainContainer.style.display = 'block';
+                
+                initializeMainApp();
+                showNotification(`Добро пожаловать, ${adventurerName}! Ваше приключение начинается.`, 'success');
+                
+                setTimeout(() => {
+                    initMusic();
+                }, 500);
+            });
+
+            nicknameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !startBtn.disabled) {
+                    startBtn.click();
+                }
+            });
+
+            setTimeout(() => {
+                if (document.getElementById('welcome-modal').classList.contains('active')) {
+                    nicknameInput.focus();
+                }
+            }, 100);
+        }
+
+        // ===== ОСНОВНОЕ ПРИЛОЖЕНИЕ =====
+        function initializeMainApp() {
+            state.availableCards = [...allPostulates];
+            selectNextCard();
+            renderAllColumns();
+            updateUI();
+            setupEventListeners();
+            initMusic();
+        }
+
+        function selectNextCard() {
+            if (state.availableCards.length === 0) {
+                state.currentCard = null;
+                document.getElementById('current-card-title').textContent = 'Хей, похоже все карты распределены!';
+                document.getElementById('current-card-desc').textContent = 'Нажми "Результат" чтобы увидеть свой профиль.';
+                document.getElementById('add-legendary').disabled = true;
+                document.getElementById('add-epic').disabled = true;
+                document.getElementById('skip-card').disabled = true;
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * state.availableCards.length);
+            state.currentCard = state.availableCards[randomIndex];
+            
+            document.getElementById('current-card-title').textContent = state.currentCard.title;
+            document.getElementById('current-card-desc').textContent = state.currentCard.description;
+            
+            document.getElementById('add-legendary').disabled = false;
+            document.getElementById('add-epic').disabled = false;
+            document.getElementById('skip-card').disabled = false;
+            
+            if (state.legendary.length >= 4) {
+                document.getElementById('add-legendary').disabled = true;
+            }
+            if (state.epic.length >= 10) {
+                document.getElementById('add-epic').disabled = true;
+            }
+        }
+
+        function addToLegendary() {
+            if (!state.currentCard) return;
+            
+            if (state.legendary.length >= 4) {
+                showNotification('Максимум 4 Легендарных постулата!', 'error');
+                return;
+            }
+            
+            state.availableCards = state.availableCards.filter(card => card.id !== state.currentCard.id);
+            state.legendary.push(state.currentCard.id);
+            
+            showNotification(`"${state.currentCard.title}" добавлен в Легендарные!`, 'success');
+            selectNextCard();
+            renderAllColumns();
+            updateUI();
+        }
+
+        function addToEpic() {
+            if (!state.currentCard) return;
+            
+            if (state.epic.length >= 10) {
+                showNotification('Максимум 10 Эпических постулатов!', 'error');
+                return;
+            }
+            
+            state.availableCards = state.availableCards.filter(card => card.id !== state.currentCard.id);
+            state.epic.push(state.currentCard.id);
+            
+            showNotification(`"${state.currentCard.title}" добавлен в Эпические!`, 'success');
+            selectNextCard();
+            renderAllColumns();
+            updateUI();
+        }
+
+        function skipCard() {
+            if (!state.currentCard) return;
+            
+            state.availableCards = state.availableCards.filter(card => card.id !== state.currentCard.id);
+            state.skipped.push(state.currentCard.id);
+            
+            showNotification(`"${state.currentCard.title}" пропущен.`, 'info');
+            selectNextCard();
+            renderAllColumns();
+            updateUI();
+        }
+
+        function removeCardFromColumn(cardId, columnType) {
+            const card = allPostulates.find(c => c.id === cardId);
+            if (!card) return;
+            
+            if (columnType === 'legendary') {
+                state.legendary = state.legendary.filter(id => id !== cardId);
+            } else if (columnType === 'epic') {
+                state.epic = state.epic.filter(id => id !== cardId);
+            } else {
+                state.skipped = state.skipped.filter(id => id !== cardId);
+            }
+            
+            state.availableCards.push(card);
+            
+            showNotification(`"${card.title}" возвращен в выбор.`, 'info');
+            selectNextCard();
+            renderAllColumns();
+            updateUI();
+        }
+
+        function renderAllColumns() {
+            renderColumn('legendary', state.legendary);
+            renderColumn('epic', state.epic);
+            renderColumn('skipped', state.skipped);
+        }
+
+        function renderColumn(columnId, cardIds) {
+            const column = document.getElementById(`${columnId}-column`);
+            column.innerHTML = '';
+            
+            cardIds.forEach(cardId => {
+                const card = allPostulates.find(c => c.id === cardId);
+                if (!card) return;
+                
+                const cardElement = document.createElement('div');
+                cardElement.className = 'column-card';
+                cardElement.innerHTML = `
+                    <button class="remove-btn" data-id="${card.id}" data-column="${columnId}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h4>${card.title}</h4>
+                    <p>${card.description}</p>
+                `;
+                
+                cardElement.addEventListener('click', (e) => {
+                    if (!e.target.closest('.remove-btn')) {
+                        showCardDetail(card);
+                    }
+                });
+                
+                column.appendChild(cardElement);
+            });
+            
+            column.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cardId = parseInt(this.dataset.id);
+                    const columnType = this.dataset.column;
+                    removeCardFromColumn(cardId, columnType);
+                });
+            });
+        }
+
+        function showCardDetail(card) {
+            document.getElementById('detail-title').textContent = card.title;
+            
+            const description = card.extendedDescription || card.description;
+            document.getElementById('detail-description').innerHTML = 
+                description.replace(/\n/g, '<br>');
+            
+            document.getElementById('detail-examples').textContent = card.examples;
+            document.getElementById('detail-stats').textContent = card.stats;
+            document.getElementById('detail-characters').textContent = card.characters;
+            
+            document.getElementById('card-detail-modal').classList.add('active');
+        }
+
+        function updateUI() {
+            const legendaryCount = state.legendary.length;
+            const epicCount = state.epic.length;
+            const skippedCount = state.skipped.length;
+            const remainingCount = state.availableCards.length;
+            const selectedCount = legendaryCount + epicCount;
+            
+            document.querySelector('.legendary .counter').textContent = `${legendaryCount}/4`;
+            document.querySelector('.epic .counter').textContent = `${epicCount}/10`;
+            document.querySelector('.skipped .counter').textContent = `${skippedCount}`;
+            
+            document.getElementById('remaining-cards').textContent = remainingCount;
+            document.getElementById('selected-cards').textContent = selectedCount;
+            
+            document.querySelector('.legendary .counter').style.color = 
+                legendaryCount >= 4 ? '#ef476f' : '#ffd166';
+            document.querySelector('.epic .counter').style.color = 
+                epicCount >= 10 ? '#ef476f' : '#9d4edd';
+            
+            if (state.currentCard) {
+                document.getElementById('add-legendary').disabled = legendaryCount >= 4;
+                document.getElementById('add-epic').disabled = epicCount >= 10;
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('add-legendary').addEventListener('click', addToLegendary);
+            document.getElementById('add-epic').addEventListener('click', addToEpic);
+            document.getElementById('skip-card').addEventListener('click', skipCard);
+            
+            document.getElementById('card-info-btn').addEventListener('click', () => {
+                if (state.currentCard) {
+                    showCardDetail(state.currentCard);
+                }
+            });
+            
+            document.getElementById('close-detail-btn').addEventListener('click', () => {
+                document.getElementById('card-detail-modal').classList.remove('active');
+            });
+            
+            document.getElementById('card-detail-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'card-detail-modal') {
+                    document.getElementById('card-detail-modal').classList.remove('active');
+                }
+            });
+            
+            document.getElementById('reset-btn').addEventListener('click', resetAll);
+            document.getElementById('result-btn').addEventListener('click', showResult);
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('share-btn').addEventListener('click', shareResult);
+            
+            document.getElementById('music-control').addEventListener('click', toggleMusic);
+            
+            document.getElementById('result-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'result-modal') {
+                    closeModal();
+                }
+            });
+        }
+
+        function resetAll() {
+            if (confirm('Точно сбросить все выборы и начать заново?')) {
+                state.legendary = [];
+                state.epic = [];
+                state.skipped = [];
+                state.availableCards = [...allPostulates];
+                selectNextCard();
+                renderAllColumns();
+                updateUI();
+                showNotification('Все выборы сброшены!', 'success');
+            }
+        }
+
+        function showResult() {
+            const legendaryCards = allPostulates.filter(card => state.legendary.includes(card.id));
+            const epicCards = allPostulates.filter(card => state.epic.includes(card.id));
+            const skippedCards = allPostulates.filter(card => state.skipped.includes(card.id));
+            
+            let resultHTML = `
+                <div class="adventurer-name-header">
+                    <div class="name-display">${adventurerName}</div>
+                    <div>Архетип: <strong>${determineArchetype(legendaryCards, epicCards)}</strong></div>
+                </div>
+                
+                <h3>🏆 Легендарные постулаты (${legendaryCards.length}/4):</h3>
+                <ul>
+            `;
+            
+            legendaryCards.forEach(card => {
+                resultHTML += `<li><strong>${card.title}:</strong> ${card.description}</li>`;
+            });
+            
+            resultHTML += `
+                </ul>
+                <h3>✨ Эпические постулаты (${epicCards.length}/10):</h3>
+                <ul>
+            `;
+            
+            epicCards.forEach(card => {
+                resultHTML += `<li><strong>${card.title}:</strong> ${card.description}</li>`;
+            });
+            
+            resultHTML += `
+                </ul>
+                <h3>📊 Статистика:</h3>
+                <p>Всего карт: ${allPostulates.length}</p>
+                <p>Выбрано: ${legendaryCards.length + epicCards.length} из 14 возможных</p>
+                <p>Пропущено: ${skippedCards.length}</p>
+                <p>Осталось нерассмотренных: ${state.availableCards.length}</p>
+            `;
+            
+            document.getElementById('result-content').innerHTML = resultHTML;
+            document.getElementById('result-name').textContent = adventurerName;
+            document.getElementById('result-modal').classList.add('active');
+        }
+
+        function determineArchetype(legendary, epic) {
+            const allSelected = [...legendary, ...epic];
+            if (allSelected.length === 0) return "Неопределённый Странник";
+            
+            const categories = {};
+            allSelected.forEach(card => {
+                categories[card.category] = (categories[card.category] || 0) + 1;
+            });
+            
+            let maxCategory = '';
+            let maxCount = 0;
+            for (const [category, count] of Object.entries(categories)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    maxCategory = category;
+                }
+            }
+            
+            const archetypes = {
+                'relationships': 'Брат по оружию',
+                'personal': 'Свободный Странник',
+                'creation': 'Творец',
+                'mind': 'Интеллектуалыч',
+                'power': 'Тестостероновая машина',
+                'security': 'Страж',
+                'experience': 'Искатель Приключений',
+                'health': 'Целитель',
+                'resources': 'Хранитель Изобилия',
+                'social': 'Лидер',
+                'spirit': 'Духовный Путеводитель',
+                'legacy': 'Создатель Наследия',
+                'integrity': 'Хранитель Кодекса',
+                'harmony': 'Мастер Баланса',
+                'growth': 'Искатель Вызовов',
+                'productivity': 'Архитектор Систем',
+                'altruism': 'Благодетель',
+                'progress': 'Инноватор',
+                'joy': 'Шут'
+            };
+            
+            return archetypes[maxCategory] || 'Уникальный Авантюрист';
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').classList.remove('active');
+        }
+
+        function shareResult() {
+            const legendaryCards = allPostulates.filter(card => state.legendary.includes(card.id));
+            const epicCards = allPostulates.filter(card => state.epic.includes(card.id));
+            
+            const shareText = `🎲 Мой профиль авантюриста:
+
+👤 Имя: ${adventurerName}
+🏆 Архетип: ${determineArchetype(legendaryCards, epicCards)}
+
+⚔️ Легендарные постулаты (${legendaryCards.length}/4):
+${legendaryCards.map(card => `• ${card.title}`).join('\n')}
+
+✨ Эпические постулаты (${epicCards.length}/10):
+${epicCards.map(card => `• ${card.title}`).join('\n')}
+
+📊 Всего выбрано: ${legendaryCards.length + epicCards.length} из возможных
+
+Создано в Конфигураторе Авантюриста`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText)
+                    .then(() => showNotification('Результат скопирован в буфер обмена!', 'success'))
+                    .catch(() => fallbackCopy(shareText));
+            } else {
+                fallbackCopy(shareText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showNotification('Результат скопирован в буфер обмена!', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            const oldNotifications = document.querySelectorAll('.notification:not(.show)');
+            oldNotifications.forEach(n => n.remove());
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            }, 100);
+        }
+
+        // ===== МУЗЫКА =====
+        function initMusic() {
+            const music = document.getElementById('bg-music');
+            const musicControl = document.getElementById('music-control');
+            const musicIcon = document.getElementById('music-icon');
+            
+            // Проверяем авто-воспроизведение
+            const playPromise = music.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isMusicPlaying = true;
+                    musicIcon.className = 'fas fa-volume-up';
+                    music.volume = 0.3;
+                }).catch(error => {
+                    console.log('Автовоспроизведение заблокировано:', error);
+                    // Показываем кнопку музыки
+                    musicControl.style.display = 'flex';
+                });
+            }
+            
+            musicControl.addEventListener('click', toggleMusic);
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const musicIcon = document.getElementById('music-icon');
+            
+            if (isMusicPlaying) {
+                music.pause();
+                musicIcon.className = 'fas fa-volume-mute';
+                showNotification('Музыка выключена', 'info');
+            } else {
+                music.play().then(() => {
+                    musicIcon.className = 'fas fa-volume-up';
+                    showNotification('Музыка включена!', 'success');
+                }).catch(error => {
+                    console.log('Не удалось включить музыку:', error);
+                    showNotification('Не удалось включить музыку. Проверьте настройки браузера.', 'error');
+                });
+            }
+            
+            isMusicPlaying = !isMusicPlaying;
+        }
+    </script>
+</body>
+</html>
